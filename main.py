@@ -139,7 +139,7 @@ class CloudVision(AddOn):
                     pass
         print(pages)
         resp = self.client.patch(f"documents/{document.id}/", {"pages": pages})
-        print(resp.stauts_code)
+        print(resp.status_code)
        
     def vision_method(self, document, input_dir, filename):
         #Assign the remote path to the response JSON files to a variable.
