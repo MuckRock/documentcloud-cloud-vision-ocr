@@ -139,7 +139,7 @@ class CloudVision(AddOn):
                     pass
                 pages.append(page)
         print(pages)
-        #self.client.patch(f"documents/{document.id}/", {"pages": pages})
+        self.client.patch(f"documents/{document.id}/", {"pages": pages})
        
 
     def vision_method(self, document, input_dir, filename):
