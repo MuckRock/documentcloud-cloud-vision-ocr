@@ -23,7 +23,7 @@ class CloudVision(AddOn):
         # Instantiate a client for the client libraries 'storage' and 'vision'
         self.storage_client = storage.Client()
         self.vision_client = vision.ImageAnnotatorClient()
-        self.bucket = self.storage_client.get_bucket(bucket_name)
+        self.bucket = self.storage_client.get_bucket(self.bucket_name)
         # Activate DOCUMENT_TEXT_DETECTION feature
         self.feature = vision.Feature(type_=vision.Feature.Type.DOCUMENT_TEXT_DETECTION)
         # Set file format to PDF
