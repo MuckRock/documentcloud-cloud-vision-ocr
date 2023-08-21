@@ -86,14 +86,14 @@ class CloudVision(AddOn):
 
         #Input source and input configuration.
         gcs_source = vision.GcsSource(uri=gcs_source_uri)
-        input_config = vision.InputConfig(gcs_source=gcs_source, mime_type=mime_type)
+        input_config = vision.InputConfig(gcs_source=gcs_source, mime_type=self.mime_type)
 
         #Path to the response JSON files in the Google Cloud Storage. In this case, the JSON files will be saved inside a subfolder of the Cloud version of the input_dir called 'json_output'.
         gcs_destination_uri = os.path.join('gs://', self.bucket_name, remote_subdir, 'json_output', filename[:30]+'_')
 
         #Output destination and output configuration.
         gcs_destination = vision.GcsDestination(uri=gcs_destination_uri)
-        output_config = vision.OutputConfig(gcs_destination=gcs_destination, batch_size=batch_size)
+        output_config = vision.OutputConfig(gcs_destination=gcs_destination, batch_size=self.batch_size)
 
         #Instantiate OCR annotation request.
         async_request = vision.AsyncAnnotateFileRequest(
