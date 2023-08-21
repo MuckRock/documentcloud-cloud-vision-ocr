@@ -138,6 +138,7 @@ class CloudVision(AddOn):
                 except:
                     pass
         print(pages)
+        print(document.id)
         resp = self.client.patch(f"documents/{document.id}/", {"pages": pages})
         print(resp.status_code)
        
