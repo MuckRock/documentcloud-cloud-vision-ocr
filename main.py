@@ -45,6 +45,13 @@ class CloudVision(AddOn):
                 return False
         return True
     
+    def dry_run(self, documents):
+        num_pages = 0
+        for doc in documents:
+            num_pages += doc.page_count
+        self.set_message(f"There are {num_pages} pages in this document set. It would cost {num_pages} AI credits to OCR this document set.")
+        sys.exit(0)
+
     def main(self):
         for document in self.get_documents():
             # get the dimensions of the pages
