@@ -101,7 +101,7 @@ class CloudVision(AddOn):
 
         return gcs_destination_uri
 
-    def list_blobs(gcs_destination_uri):
+    def list_blobs(self, gcs_destination_uri):
         #Identify the 'prefix' of the response JSON files, i.e. their path and the beginning of their filename.
         prefix='/'.join(gcs_destination_uri.split('//')[1].split('/')[1:])
 
