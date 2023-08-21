@@ -2,3 +2,4 @@ python-documentcloud==3.3.0
 requests
 listcrunch
 google-cloud-vision
+google-cloud-storage
