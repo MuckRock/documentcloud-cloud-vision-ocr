@@ -15,7 +15,7 @@ from google.cloud import storage
 class CloudVision(AddOn):
     """OCR your documents using Google Cloud Vision API"""
     # Sets up Google Cloud API Credential file
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setup_credential_file()
         # Set bucket name
