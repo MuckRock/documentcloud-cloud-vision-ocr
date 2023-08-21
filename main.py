@@ -15,7 +15,7 @@ from google.cloud import storage
 class CloudVision(AddOn):
     """OCR your documents using Google Cloud Vision API"""
     # Sets up Google Cloud API Credential file
-    self.setup_credential_file()
+    setup_credential_file()
     # Set bucket name
     bucket_name = 'documentcloud_cloud_vision_ocr'
     # Instantiate a client for the client libraries 'storage' and 'vision'
