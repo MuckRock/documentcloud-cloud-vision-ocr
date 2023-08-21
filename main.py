@@ -14,17 +14,6 @@ from google.cloud import storage
 
 class CloudVision(AddOn):
     """OCR your documents using Google Cloud Vision API"""
-    self.setup_credential_file()
-    bucket_name = 'documentcloud_cloud_vision_ocr'
-    # Instantiate a client for the client libraries 'storage' and 'vision'
-    vision_client = vision.ImageAnnotatorClient()
-    bucket = storage_client.get_bucket(bucket_name)
-    # Activate DOCUMENT_TEXT_DETECTION feature
-    feature = vision.Feature(type_=vision.Feature.Type.DOCUMENT_TEXT_DETECTION)
-    # Set file format to PDF
-    mime_type = 'application/pdf'
-    # The number of pages that will be grouped in each json response file
-    batch_size = 1
 
     def setup_credential_file(self):
         """Sets up Google Cloud credential file"""
@@ -69,6 +58,16 @@ class CloudVision(AddOn):
         sys.exit(0)
 
     def JSON_OCR(self, input_dir, filename):
+        bucket_name = 'documentcloud_cloud_vision_ocr'
+        # Instantiate a client for the client libraries 'storage' and 'vision'
+        vision_client = vision.ImageAnnotatorClient()
+        bucket = storage_client.get_bucket(bucket_name)
+        # Activate DOCUMENT_TEXT_DETECTION feature
+        feature = vision.Feature(type_=vision.Feature.Type.DOCUMENT_TEXT_DETECTION)
+        # Set file format to PDF
+        mime_type = 'application/pdf'
+        # The number of pages that will be grouped in each json response file
+        batch_size = 1
         #Create a remote path. The combination of os.path.basename and os.path.normath extracts the name of the last directory of the path, i.e. 'docs_to_OCR'. 
         remote_subdir= os.path.basename(os.path.normpath(input_dir))
         rel_remote_path = os.path.join(remote_subdir, filename)
@@ -143,6 +142,8 @@ class CloudVision(AddOn):
     
     def main(self):
         # Sets up Google Cloud API Credential file
+        self.setup_credential_file()
+        
         os.mkdir("out")
         for document in self.get_documents():
             pdf_name = f"'{document.title}.pdf'"
