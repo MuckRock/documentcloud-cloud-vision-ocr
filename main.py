@@ -1,6 +1,5 @@
 """
-This is an example OCR add-on.  It demonstrates how to write a custom OCR
-add-on for DocumentCloud, using the editable text APIs
+This is Add-On allows users to use Google Cloud Vision API to OCR a document. 
 """
 
 import os
@@ -9,8 +8,8 @@ from documentcloud.addon import AddOn
 from listcrunch import uncrunch
 from tempfile import NamedTemporaryFile
 
-class OCRSpace(AddOn):
-    """OCR your documents using OCRSpace"""
+class CloudVision(AddOn):
+    """OCR your documents using Google Cloud Vision API"""
     def setup_credential_file(self):
         """Sets up Google Cloud credential file"""
         credentials = os.environ["TOKEN"]
@@ -20,7 +19,32 @@ class OCRSpace(AddOn):
         gac.write(credentials.encode("ascii"))
         gac.close()
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gac.name
-
+    
+    def validate(self):
+        """Validate that we can run the translation"""
+        if self.get_document_count() == 0:
+            self.set_message(
+                "It looks like no documents were selected. Search for some or "
+                "select them and run again."
+            )
+            return False
+        elif not self.org_id:
+            self.set_message("No organization to charge.")
+            return False
+        else:
+            num_chars = 0
+            for document in self.get_documents():
+                num_chars += len(document.full_text)
+            cost = math.ceil(num_chars/75)
+            resp = self.client.post(
+                f"organizations/{self.org_id}/ai_credits/",
+                json={"ai_credits": cost},
+            )
+            if resp.status_code != 200:
+                self.set_message("Error charging AI credits.")
+                return False
+        return True
+    
     def main(self):
         for document in self.get_documents():
             # get the dimensions of the pages
@@ -67,4 +91,4 @@ class OCRSpace(AddOn):
             self.client.patch(f"documents/{document.id}/", {"pages": pages})
 
 if __name__ == "__main__":
-    OCRSpace().main()
+    CloudVision().main()
