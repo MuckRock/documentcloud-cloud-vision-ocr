@@ -141,6 +141,8 @@ class CloudVision(AddOn):
         self.set_doc_text(blobs_list)
     
     def main(self):
+        # Sets up Google Cloud API Credential file
+        self.setup_credential_file()
         os.mkdir("out")
         for document in self.get_documents():
             pdf_name = f"'{document.title}.pdf'"
