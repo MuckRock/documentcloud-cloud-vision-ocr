@@ -14,8 +14,9 @@ from google.cloud import storage
 
 class CloudVision(AddOn):
     """OCR your documents using Google Cloud Vision API"""
-    # Sets up Google Cloud API Credential file
+    # Initialize GCV Variables
     def __init__(self, *args, **kwargs):
+        """ Initialize GCV Bucket and variables """
         super().__init__(*args, **kwargs)
         self.setup_credential_file()
         # Set bucket name
@@ -30,6 +31,7 @@ class CloudVision(AddOn):
         self.mime_type = 'application/pdf'
         # The number of pages that will be grouped in each json response file
         self.batch_size = 1
+    
     def setup_credential_file(self):
         """Sets up Google Cloud credential file"""
         credentials = os.environ["TOKEN"]
@@ -39,9 +41,9 @@ class CloudVision(AddOn):
         gac.write(credentials.encode("ascii"))
         gac.close()
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gac.name
-    
+
     def validate(self):
-        """Validate that we can run the translation"""
+        """Validate that we can run the OCR"""
         if self.get_document_count() == 0:
             self.set_message(
                 "It looks like no documents were selected. Search for some or "
@@ -64,8 +66,9 @@ class CloudVision(AddOn):
                 self.set_message("Error charging AI credits.")
                 return False
         return True
-    
+        
     def dry_run(self, documents):
+        """ Tells us how many AI credits the Add-On Run will cost.  """
         num_pages = 0
         for doc in documents:
             num_pages += doc.page_count
