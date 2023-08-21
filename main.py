@@ -117,7 +117,7 @@ class CloudVision(AddOn):
 
         return blobs_list
 
-    def set_doc_text(self, blobs_list):
+    def set_doc_text(self, document, blobs_list):
         pages = []
         for i, blob in enumerate(blobs_list):
             json_string = blob.download_as_string()
@@ -143,7 +143,7 @@ class CloudVision(AddOn):
         gcs_destination_uri = self.JSON_OCR(input_dir, filename)
         #Create an ordered list of blobs from these remote JSON files.
         blobs_list = self.list_blobs(gcs_destination_uri)
-        self.set_doc_text(blobs_list)
+        self.set_doc_text(document, blobs_list)
     
     def main(self):
         os.mkdir("out")
