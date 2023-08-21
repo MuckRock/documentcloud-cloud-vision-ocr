@@ -135,7 +135,8 @@ class CloudVision(AddOn):
                 except:
                     pass
                 pages.append(page)
-        self.client.patch(f"documents/{document.id}/", {"pages": pages})
+        print(pages)
+        #self.client.patch(f"documents/{document.id}/", {"pages": pages})
        
 
     def vision_method(self, document, input_dir, filename):
