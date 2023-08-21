@@ -147,7 +147,7 @@ class CloudVision(AddOn):
         
         os.mkdir("out")
         for document in self.get_documents():
-            pdf_name = f"'{document.title}.pdf'"
+            pdf_name = f"{document.title}.pdf"
             with open(f"./out/{document.title}.pdf", "wb") as file:
                 file.write(document.pdf)
             self.vision_method(document, "out", pdf_name)
