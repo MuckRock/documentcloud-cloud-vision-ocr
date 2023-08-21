@@ -97,7 +97,7 @@ class CloudVision(AddOn):
 
         #Instantiate OCR annotation request.
         async_request = vision.AsyncAnnotateFileRequest(
-        features=[feature], input_config=input_config, output_config=output_config)
+        features=[self.feature], input_config=input_config, output_config=output_config)
 
         #The timeout variable is used to dictate when a process takes too long and should be aborted. If the OCR process fails due to timeout, you can try and increase this threshold.
         operation = self.vision_client.async_batch_annotate_files(requests=[async_request])
