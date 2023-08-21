@@ -14,21 +14,20 @@ from google.cloud import storage
 
 class CloudVision(AddOn):
     """OCR your documents using Google Cloud Vision API"""
-    def __init__(self):
-        # Sets up Google Cloud API Credential file
-        self.setup_credential_file()
-        # Set bucket name
-        bucket_name = 'documentcloud_cloud_vision_ocr'
-        # Instantiate a client for the client libraries 'storage' and 'vision'
-        storage_client = storage.Client()
-        vision_client = vision.ImageAnnotatorClient()
-        bucket = storage_client.get_bucket(bucket_name)
-        # Activate DOCUMENT_TEXT_DETECTION feature
-        feature = vision.Feature(type_=vision.Feature.Type.DOCUMENT_TEXT_DETECTION)
-        # Set file format to PDF
-        mime_type = 'application/pdf'
-        # The number of pages that will be grouped in each json response file
-        batch_size = 1
+    # Sets up Google Cloud API Credential file
+    self.setup_credential_file()
+    # Set bucket name
+    bucket_name = 'documentcloud_cloud_vision_ocr'
+    # Instantiate a client for the client libraries 'storage' and 'vision'
+    storage_client = storage.Client()
+    vision_client = vision.ImageAnnotatorClient()
+    bucket = storage_client.get_bucket(bucket_name)
+    # Activate DOCUMENT_TEXT_DETECTION feature
+    feature = vision.Feature(type_=vision.Feature.Type.DOCUMENT_TEXT_DETECTION)
+    # Set file format to PDF
+    mime_type = 'application/pdf'
+    # The number of pages that will be grouped in each json response file
+    batch_size = 1
     def setup_credential_file(self):
         """Sets up Google Cloud credential file"""
         credentials = os.environ["TOKEN"]
