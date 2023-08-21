@@ -132,8 +132,7 @@ class CloudVision(AddOn):
                     page = {
                         "page_number": i,
                         "text": annotation['text'],
-                        "ocr": "googlecv",
-                        "positions": [],
+                        "ocr": "googlecv"
                     }
                 except:
                     pass
