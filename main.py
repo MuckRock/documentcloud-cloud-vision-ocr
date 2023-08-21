@@ -137,7 +137,9 @@ class CloudVision(AddOn):
                     pages.append(page)
                 except:
                     pass
-        self.client.patch(f"documents/{document.id}/", {"pages": pages})
+        print(pages)
+        resp = self.client.patch(f"documents/{document.id}/", {"pages": pages})
+        resp.raise_for_status()
        
     def vision_method(self, document, input_dir, filename):
         #Assign the remote path to the response JSON files to a variable.
