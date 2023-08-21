@@ -1,11 +1,7 @@
-title: OCRSpace
+title: Google Cloud Vision OCR
 description: >-
-  OCR your documents using OCRSpace
-
-
-  <https://ocr.space>
-
-
+  OCR your documents using Google Cloud Vision OCR. 
+  This Add-On uses AI Credits. 
 type: object
 documents:
   - selected
