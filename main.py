@@ -15,6 +15,9 @@ from google.cloud import storage
 class CloudVision(AddOn):
     """OCR your documents using Google Cloud Vision API"""
     def __init__(self):
+        # Sets up Google Cloud API Credential file
+        self.setup_credential_file()
+        # Set bucket name
         bucket_name = 'documentcloud_cloud_vision_ocr'
         # Instantiate a client for the client libraries 'storage' and 'vision'
         storage_client = storage.Client()
@@ -142,9 +145,6 @@ class CloudVision(AddOn):
         self.set_doc_text(blobs_list)
     
     def main(self):
-        # Sets up Google Cloud API Credential file
-        self.setup_credential_file()
-        
         os.mkdir("out")
         for document in self.get_documents():
             pdf_name = f"{document.title}.pdf"
