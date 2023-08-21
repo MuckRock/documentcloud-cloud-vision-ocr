@@ -60,6 +60,7 @@ class CloudVision(AddOn):
     def JSON_OCR(self, input_dir, filename):
         bucket_name = 'documentcloud_cloud_vision_ocr'
         # Instantiate a client for the client libraries 'storage' and 'vision'
+        storage_client = storage.Client()
         vision_client = vision.ImageAnnotatorClient()
         bucket = storage_client.get_bucket(bucket_name)
         # Activate DOCUMENT_TEXT_DETECTION feature
