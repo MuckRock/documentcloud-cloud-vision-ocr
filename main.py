@@ -134,13 +134,11 @@ class CloudVision(AddOn):
                         "text": annotation['text'],
                         "ocr": "googlecv"
                     }
+                    pages.append(page)
                 except:
                     pass
-                pages.append(page)
-        print(pages)
         self.client.patch(f"documents/{document.id}/", {"pages": pages})
        
-
     def vision_method(self, document, input_dir, filename):
         #Assign the remote path to the response JSON files to a variable.
         gcs_destination_uri = self.JSON_OCR(input_dir, filename)
