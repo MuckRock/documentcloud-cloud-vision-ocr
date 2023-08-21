@@ -7,12 +7,19 @@ import os
 import requests
 from documentcloud.addon import AddOn
 from listcrunch import uncrunch
-
-URL = "https://api.ocr.space/parse/image"
-
+from tempfile import NamedTemporaryFile
 
 class OCRSpace(AddOn):
     """OCR your documents using OCRSpace"""
+    def setup_credential_file(self):
+        """Sets up Google Cloud credential file"""
+        credentials = os.environ["TOKEN"]
+        # put the contents into a named temp file
+        # and set the var to the name of the file
+        gac = NamedTemporaryFile(delete=False)
+        gac.write(credentials.encode("ascii"))
+        gac.close()
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = gac.name
 
     def main(self):
         for document in self.get_documents():
