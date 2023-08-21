@@ -78,18 +78,18 @@ class CloudVision(AddOn):
         rel_remote_path = os.path.join(remote_subdir, filename)
 
         #Upload file to Google Cloud Bucket as a blob. 
-        blob = bucket.blob(rel_remote_path)
+        blob = self.bucket.blob(rel_remote_path)
         blob.upload_from_filename(os.path.join(input_dir, filename))
 
         #Remote path to the file.
-        gcs_source_uri = os.path.join('gs://', bucket_name, rel_remote_path)
+        gcs_source_uri = os.path.join('gs://', self.bucket_name, rel_remote_path)
 
         #Input source and input configuration.
         gcs_source = vision.GcsSource(uri=gcs_source_uri)
         input_config = vision.InputConfig(gcs_source=gcs_source, mime_type=mime_type)
 
         #Path to the response JSON files in the Google Cloud Storage. In this case, the JSON files will be saved inside a subfolder of the Cloud version of the input_dir called 'json_output'.
-        gcs_destination_uri = os.path.join('gs://', bucket_name, remote_subdir, 'json_output', filename[:30]+'_')
+        gcs_destination_uri = os.path.join('gs://', self.bucket_name, remote_subdir, 'json_output', filename[:30]+'_')
 
         #Output destination and output configuration.
         gcs_destination = vision.GcsDestination(uri=gcs_destination_uri)
@@ -100,7 +100,7 @@ class CloudVision(AddOn):
         features=[feature], input_config=input_config, output_config=output_config)
 
         #The timeout variable is used to dictate when a process takes too long and should be aborted. If the OCR process fails due to timeout, you can try and increase this threshold.
-        operation = vision_client.async_batch_annotate_files(requests=[async_request])
+        operation = self.vision_client.async_batch_annotate_files(requests=[async_request])
         operation.result(timeout=360)
 
         return gcs_destination_uri
