@@ -139,7 +139,7 @@ class CloudVision(AddOn):
                     pass
         print(pages)
         print(document.id)
-        resp = self.client.patch(f"documents/{document.id}/", {"pages": pages})
+        resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
         print(resp.status_code)
         print(resp.json())
        
