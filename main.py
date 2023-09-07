@@ -165,24 +165,23 @@ class CloudVision(AddOn):
                     }
 
                 # Extract text position information
-                    for page_response in text_response["pages"]:
-                        for block in page_response["blocks"]:
-                            for paragraph in block["paragraphs"]:
-                                for word in paragraph["words"]:
-                                    for symbol in word["symbols"]:
-                                        position_info = symbol["boundingBox"]["vertices"]
-                                        positions = [
-                                            {"x": vertex["x"], "y": vertex["y"]}
-                                            for vertex in position_info
-                                        ]
+                    for block in annotation["pages"][i]["blocks"]:
+                        for paragraph in block["paragraphs"]:
+                            for word in paragraph["words"]:
+                                for symbol in word["symbols"]:
+                                    position_info = symbol["boundingBox"]["vertices"]
+                                    positions = [
+                                        {"x": vertex["x"], "y": vertex["y"]}
+                                        for vertex in position_info
+                                    ]
 
                                     # Append position information to the page dictionary
-                                        page["positions"].append(
-                                            {
-                                                "text": symbol["text"],
-                                                "position": positions,
-                                            }
-                                        )
+                                    page["positions"].append(
+                                        {
+                                            "text": symbol["text"],
+                                            "position": positions,
+                                        }
+                                    )
 
                     pages.append(page)
                 except KeyError as e:
