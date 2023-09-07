@@ -170,10 +170,10 @@ class CloudVision(AddOn):
                             for word in paragraph["words"]:
                                 normalized_vertices = word["boundingBox"]["normalizedVertices"]
                                 # Extract coordinates from normalizedVertices
-                                x1_percent = normalized_vertices[0]["x"] * 100
-                                y1_percent = normalized_vertices[0]["y"] * 100
-                                x2_percent = normalized_vertices[2]["x"] * 100
-                                y2_percent = normalized_vertices[2]["y"] * 100
+                                x1 = normalized_vertices[0]["x"]  # Leftmost x-coordinate
+                                x2 = normalized_vertices[1]["x"]  # Rightmost x-coordinate
+                                y1 = normalized_vertices[0]["y"]  # Topmost y-coordinate
+                                y2 = normalized_vertices[2]["y"]  # Bottommost y-coordinate
                                 
                                 symbols_list = word["symbols"]
                                 # Initialize an empty string to store the full text
@@ -185,10 +185,10 @@ class CloudVision(AddOn):
                                     
                                 position_info = {
                                     "text": full_text,
-                                    "x1": x1_percent,
-                                    "x2": x2_percent,
-                                    "y1": y1_percent,
-                                    "y2": y2_percent,
+                                    "x1": x1,
+                                    "x2": x2,
+                                    "y1": y1,
+                                    "y2": y2,
                                 }
 
                                 # Append position information to the page dictionary
