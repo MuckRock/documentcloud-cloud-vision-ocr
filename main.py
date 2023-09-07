@@ -168,22 +168,23 @@ class CloudVision(AddOn):
                     for block in annotation["pages"][i]["blocks"]:
                         for paragraph in block["paragraphs"]:
                             for word in paragraph["words"]:
-                                left = word["boundingBox"]["vertices"][0]["x"]
-                                right = word["boundingBox"]["vertices"][1]["x"]
-                                top = word["boundingBox"]["vertices"][0]["y"]
-                                bottom = word["boundingBox"]["vertices"][2]["y"]
+                                normalized_vertices = word["boundingBox"]["normalizedVertices"]
+                                # Extract coordinates from normalizedVertices
+                                x1_percent = normalized_vertices[0]["x"] * 100
+                                y1_percent = normalized_vertices[0]["y"] * 100
+                                x2_percent = normalized_vertices[2]["x"] * 100
+                                y2_percent = normalized_vertices[2]["y"] * 100
+                                
+                                symbols_list = words["property"]["symbols"]
+                                # Initialize an empty string to store the full text
+                                full_text = ""
 
-                                # Calculate coordinates as percentages
-                                page_width = annotation["pages"][i]["width"]
-                                page_height = annotation["pages"][i]["height"]
-
-                                x1_percent = (left / page_width) * 100
-                                x2_percent = (right / page_width) * 100
-                                y1_percent = (top / page_height) * 100
-                                y2_percent = (bottom / page_height) * 100
-
+                                # Concatenate the "text" attribute of each symbol
+                                for symbol in symbols_list:
+                                    full_text += symbol["text"]
+                                    
                                 position_info = {
-                                    "text": word["text"],
+                                    "text": full_text,
                                     "x1": x1_percent,
                                     "x2": x2_percent,
                                     "y1": y1_percent,
