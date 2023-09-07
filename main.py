@@ -153,7 +153,7 @@ class CloudVision(AddOn):
             json_string = blob.download_as_string()
             response = json.loads(json_string)
             full_text_response = response["responses"]
-            # print(full_text_response)
+        
             for text_response in full_text_response:
                 try:
                     annotation = text_response["fullTextAnnotation"]
@@ -161,27 +161,38 @@ class CloudVision(AddOn):
                         "page_number": i,
                         "text": annotation["text"],
                         "ocr": "googlecv",
-                        # "positions": [], 
+                        "positions": [],  # Initialize positions array
                     }
 
-                # Extract text position information
+                    # Extract text position information for words
                     for block in annotation["pages"][i]["blocks"]:
                         for paragraph in block["paragraphs"]:
                             for word in paragraph["words"]:
-                                print(word)
-                                """positions = [
-                                    {"x": vertex["x"], "y": vertex["y"]}
-                                    for vertex in position_info
-                                ]"""
+                                left = word["boundingBox"]["vertices"][0]["x"]
+                                right = word["boundingBox"]["vertices"][1]["x"]
+                                top = word["boundingBox"]["vertices"][0]["y"]
+                                bottom = word["boundingBox"]["vertices"][2]["y"]
+
+                                # Calculate coordinates as percentages
+                                page_width = annotation["pages"][i]["width"]
+                                page_height = annotation["pages"][i]["height"]
+
+                                x1_percent = (left / page_width) * 100
+                                x2_percent = (right / page_width) * 100
+                                y1_percent = (top / page_height) * 100
+                                y2_percent = (bottom / page_height) * 100
+
+                                position_info = {
+                                    "text": word["text"],
+                                    "x1": x1_percent,
+                                    "x2": x2_percent,
+                                    "y1": y1_percent,
+                                    "y2": y2_percent,
+                                }
 
                                 # Append position information to the page dictionary
-                                page["positions"].append(
-                                    {
-                                        "text": symbol["text"],
-                                        #"position": positions,
-                                    }
-                                )
-                            
+                                page["positions"].append(position_info)
+
                     pages.append(page)
                 except KeyError as e:
                     print(e)
@@ -195,7 +206,8 @@ class CloudVision(AddOn):
         resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
         print(resp.status_code)
         print(resp.json())
-        
+
+       
 
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc """
