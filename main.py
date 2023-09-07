@@ -175,12 +175,8 @@ class CloudVision(AddOn):
                                     ]  # Bottommost y-coordinate
 
                                     symbols_list = word["symbols"]
-                                    # Initialize an empty string to store the full text of the word
-                                    full_text = ""
-                                    # Concatenate the "text" attribute of each symbol to form the word
-                                    for symbol in symbols_list:
-                                        full_text += symbol["text"]
-
+                                    full_text = ''.join(symbol["text"] for symbol in symbols_list)
+                                    
                                     position_info = {
                                         "text": full_text,
                                         "x1": x1,
@@ -202,10 +198,10 @@ class CloudVision(AddOn):
                     )
 
         # Set the pages with text and position information to the document
-        print(pages)
+        # print(pages) debug
         resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
-        print(resp.status_code)
-        print(resp.json())
+        # print(resp.status_code) debug
+        # print(resp.json()) debug
 
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc"""
