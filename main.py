@@ -168,8 +168,7 @@ class CloudVision(AddOn):
                     for block in annotation["pages"][i]["blocks"]:
                         for paragraph in block["paragraphs"]:
                             for word in paragraph["words"]:
-                                position_info = word.bounding_box
-                                print(position_info)
+                                print(word)
                                 """positions = [
                                     {"x": vertex["x"], "y": vertex["y"]}
                                     for vertex in position_info
