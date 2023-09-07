@@ -153,36 +153,36 @@ class CloudVision(AddOn):
             json_string = blob.download_as_string()
             response = json.loads(json_string)
             full_text_response = response["responses"]
-            print(full_text_response)
-            """for text_response in full_text_response:
+            # print(full_text_response)
+            for text_response in full_text_response:
                 try:
                     annotation = text_response["fullTextAnnotation"]
                     page = {
                         "page_number": i,
                         "text": annotation["text"],
                         "ocr": "googlecv",
-                        "positions": [],  # Initialize positions array
+                        # "positions": [], 
                     }
 
                 # Extract text position information
                     for block in annotation["pages"][i]["blocks"]:
                         for paragraph in block["paragraphs"]:
                             for word in paragraph["words"]:
-                                for symbol in word["symbols"]:
-                                    position_info = symbol["boundingBox"]["vertices"]
-                                    positions = [
-                                        {"x": vertex["x"], "y": vertex["y"]}
-                                        for vertex in position_info
-                                    ]
+                                position_info = word.bounding_box
+                                print(position_info)
+                                """positions = [
+                                    {"x": vertex["x"], "y": vertex["y"]}
+                                    for vertex in position_info
+                                ]"""
 
-                                    # Append position information to the page dictionary
-                                    page["positions"].append(
-                                        {
-                                            "text": symbol["text"],
-                                            "position": positions,
-                                        }
-                                    )
-
+                                # Append position information to the page dictionary
+                                page["positions"].append(
+                                    {
+                                        "text": symbol["text"],
+                                        #"position": positions,
+                                    }
+                                )
+                            
                     pages.append(page)
                 except KeyError as e:
                     print(e)
@@ -196,7 +196,7 @@ class CloudVision(AddOn):
         resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
         print(resp.status_code)
         print(resp.json())
-        """
+        
 
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc """
