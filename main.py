@@ -147,33 +147,56 @@ class CloudVision(AddOn):
         return blobs_list
 
     def set_doc_text(self, document, blobs_list):
-        """ Uses DC API to set the page text on the documents on DC"""
+        """Uses DC API to set the page text on the documents on DC and include text position information"""
         pages = []
         for i, blob in enumerate(blobs_list):
             json_string = blob.download_as_string()
             response = json.loads(json_string)
             full_text_response = response["responses"]
-            for text in full_text_response:
+
+            for text_response in full_text_response:
                 try:
-                    annotation = text["fullTextAnnotation"]
+                    annotation = text_response["fullTextAnnotation"]
                     page = {
                         "page_number": i,
                         "text": annotation["text"],
                         "ocr": "googlecv",
+                        "positions": [],  # Initialize positions array
                     }
+
+                # Extract text position information
+                    for page_response in text_response["pages"]:
+                        for block in page_response["blocks"]:
+                            for paragraph in block["paragraphs"]:
+                                for word in paragraph["words"]:
+                                    for symbol in word["symbols"]:
+                                        position_info = symbol["boundingBox"]["vertices"]
+                                        positions = [
+                                            {"x": vertex["x"], "y": vertex["y"]}
+                                            for vertex in position_info
+                                        ]
+
+                                    # Append position information to the page dictionary
+                                        page["positions"].append(
+                                            {
+                                                "text": symbol["text"],
+                                                "position": positions,
+                                            }
+                                        )
+
                     pages.append(page)
                 except KeyError:
                     self.set_message(
                         "KeyError - Ping us at info@documentcloud.org"
-                        "if you see this more than once."
+                        " if you see this more than once."
                     )
                 except ValueError:
                     self.set_message(
-                        "Value error- Ping us at info@documentcloud.org" 
-                        "if you see this more than once."
+                        "Value error - Ping us at info@documentcloud.org"
+                        " if you see this more than once."
                     )
-        print(pages)
-        print(document.id)
+
+        # Set the pages with text and position information to the document
         resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
         print(resp.status_code)
         print(resp.json())
