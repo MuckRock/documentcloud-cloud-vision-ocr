@@ -71,17 +71,6 @@ class CloudVision(AddOn):
             return False
         return True
 
-    def dry_run(self, documents):
-        """Tells us how many AI credits the Add-On Run will cost."""
-        num_pages = 0
-        for doc in documents:
-            num_pages += doc.page_count
-        self.set_message(
-            f"There are {num_pages} pages in this document set"
-            "It would cost {num_pages} AI credits to OCR this document set."
-        )
-        sys.exit(0)
-
     def json_ocr(self, input_dir, filename):
         """Uploads the PDFs to storage, runs OCR on the documents,
         and collects the gcs location for the repsonses"""
