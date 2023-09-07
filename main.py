@@ -205,7 +205,7 @@ class CloudVision(AddOn):
         print(pages)
         resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
         print(resp.status_code)
-        print(resp.json()) for debugging
+        print(resp.json())
 
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc"""
