@@ -7,8 +7,10 @@ import sys
 import math
 import json
 from tempfile import NamedTemporaryFile
+
 # pylint: disable = import-error
 from documentcloud.addon import AddOn
+
 # pylint: disable = no-name-in-module
 from google.cloud import vision
 from google.cloud import storage
@@ -75,14 +77,14 @@ class CloudVision(AddOn):
         for doc in documents:
             num_pages += doc.page_count
         self.set_message(
-            f"There are {num_pages} pages in this document set" 
+            f"There are {num_pages} pages in this document set"
             "It would cost {num_pages} AI credits to OCR this document set."
         )
         sys.exit(0)
 
     def json_ocr(self, input_dir, filename):
-        """ Uploads the PDFs to storage, runs OCR on the documents,
-        and collects the gcs location for the repsonses """
+        """Uploads the PDFs to storage, runs OCR on the documents,
+        and collects the gcs location for the repsonses"""
         # Create a remote path.
         # The combination of os.path.basename and os.path.normath
         # extracts the name of the last directory of the path, i.e. 'docs_to_OCR'.
@@ -132,7 +134,7 @@ class CloudVision(AddOn):
         return gcs_destination_uri
 
     def list_blobs(self, gcs_destination_uri):
-        """ Identifies the responsible blobs and orders them"""
+        """Identifies the responsible blobs and orders them"""
         # Identify the 'prefix' of the response JSON files
         prefix = "/".join(gcs_destination_uri.split("//")[1].split("/")[1:])
 
@@ -147,13 +149,13 @@ class CloudVision(AddOn):
         return blobs_list
 
     def set_doc_text(self, document, blobs_list):
-        """Uses DC API to set the page text on the documents on DC and include text position information"""
+        """Uses DC API to set the page text and positions given the OCR resp"""
         pages = []
         for i, blob in enumerate(blobs_list):
             json_string = blob.download_as_string()
             response = json.loads(json_string)
             full_text_response = response["responses"]
-        
+
             for text_response in full_text_response:
                 try:
                     annotation = text_response["fullTextAnnotation"]
@@ -168,13 +170,21 @@ class CloudVision(AddOn):
                     for block in annotation["pages"][i]["blocks"]:
                         for paragraph in block["paragraphs"]:
                             for word in paragraph["words"]:
-                                normalized_vertices = word["boundingBox"]["normalizedVertices"]
+                                normalized_vertices = word["boundingBox"][
+                                    "normalizedVertices"
+                                ]
                                 # Extract coordinates from normalizedVertices
-                                x1 = normalized_vertices[0]["x"]  # Leftmost x-coordinate
-                                x2 = normalized_vertices[1]["x"]  # Rightmost x-coordinate
+                                x1 = normalized_vertices[0][
+                                    "x"
+                                ]  # Leftmost x-coordinate
+                                x2 = normalized_vertices[1][
+                                    "x"
+                                ]  # Rightmost x-coordinate
                                 y1 = normalized_vertices[0]["y"]  # Topmost y-coordinate
-                                y2 = normalized_vertices[2]["y"]  # Bottommost y-coordinate
-                                
+                                y2 = normalized_vertices[2][
+                                    "y"
+                                ]  # Bottommost y-coordinate
+
                                 symbols_list = word["symbols"]
                                 # Initialize an empty string to store the full text of the word
                                 full_text = ""
@@ -182,7 +192,7 @@ class CloudVision(AddOn):
                                 # Concatenate the "text" attribute of each symbol to form the word
                                 for symbol in symbols_list:
                                     full_text += symbol["text"]
-                                    
+
                                 position_info = {
                                     "text": full_text,
                                     "x1": x1,
@@ -208,10 +218,8 @@ class CloudVision(AddOn):
         # print(resp.status_code)
         # print(resp.json()) for debugging
 
-       
-
     def vision_method(self, document, input_dir, filename):
-        """Main method that calls the sub-methods to perform OCR on a doc """
+        """Main method that calls the sub-methods to perform OCR on a doc"""
         # Assign the remote path to the response JSON files to a variable.
         gcs_destination_uri = self.json_ocr(input_dir, filename)
         # Create an ordered list of blobs from these remote JSON files.
@@ -219,7 +227,7 @@ class CloudVision(AddOn):
         self.set_doc_text(document, blobs_list)
 
     def main(self):
-        """ For each document, it sends the PDF to Google Cloud Storage and runs OCR"""
+        """For each document, it sends the PDF to Google Cloud Storage and runs OCR"""
         os.mkdir("out")
         for document in self.get_documents():
             pdf_name = f"{document.title}.pdf"
