@@ -153,8 +153,8 @@ class CloudVision(AddOn):
             json_string = blob.download_as_string()
             response = json.loads(json_string)
             full_text_response = response["responses"]
-
-            for text_response in full_text_response:
+            print(full_text_response)
+            """for text_response in full_text_response:
                 try:
                     annotation = text_response["fullTextAnnotation"]
                     page = {
@@ -196,6 +196,7 @@ class CloudVision(AddOn):
         resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
         print(resp.status_code)
         print(resp.json())
+        """
 
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc """
