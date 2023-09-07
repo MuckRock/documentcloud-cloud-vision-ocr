@@ -175,7 +175,7 @@ class CloudVision(AddOn):
                                 x2_percent = normalized_vertices[2]["x"] * 100
                                 y2_percent = normalized_vertices[2]["y"] * 100
                                 
-                                symbols_list = word["property"]["symbols"]
+                                symbols_list = word["symbols"]
                                 # Initialize an empty string to store the full text
                                 full_text = ""
 
