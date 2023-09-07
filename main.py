@@ -185,11 +185,8 @@ class CloudVision(AddOn):
                                         )
 
                     pages.append(page)
-                except KeyError:
-                    self.set_message(
-                        "KeyError - Ping us at info@documentcloud.org"
-                        " if you see this more than once."
-                    )
+                except KeyError as e:
+                    print(e)
                 except ValueError:
                     self.set_message(
                         "Value error - Ping us at info@documentcloud.org"
