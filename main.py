@@ -155,8 +155,8 @@ class CloudVision(AddOn):
                     }
 
                     # Extract text position information for words
-                    for page in annotation["pages"]:
-                        for block in page["blocks"]:
+                    for ann_page in annotation["pages"]:
+                        for block in ann_page["blocks"]:
                             for paragraph in block["paragraphs"]:
                                 for word in paragraph["words"]:
                                     normalized_vertices = word["boundingBox"][
