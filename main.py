@@ -176,10 +176,10 @@ class CloudVision(AddOn):
                                 y2 = normalized_vertices[2]["y"]  # Bottommost y-coordinate
                                 
                                 symbols_list = word["symbols"]
-                                # Initialize an empty string to store the full text
+                                # Initialize an empty string to store the full text of the word
                                 full_text = ""
 
-                                # Concatenate the "text" attribute of each symbol
+                                # Concatenate the "text" attribute of each symbol to form the word
                                 for symbol in symbols_list:
                                     full_text += symbol["text"]
                                     
@@ -205,8 +205,8 @@ class CloudVision(AddOn):
 
         # Set the pages with text and position information to the document
         resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
-        print(resp.status_code)
-        print(resp.json())
+        # print(resp.status_code)
+        # print(resp.json()) for debugging
 
        
 
