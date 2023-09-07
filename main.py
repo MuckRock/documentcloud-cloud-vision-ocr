@@ -155,42 +155,42 @@ class CloudVision(AddOn):
                     }
 
                     # Extract text position information for words
-                    for block in annotation["pages"][i]["blocks"]:
-                        for paragraph in block["paragraphs"]:
-                            for word in paragraph["words"]:
-                                normalized_vertices = word["boundingBox"][
-                                    "normalizedVertices"
-                                ]
-                                # Extract coordinates from normalizedVertices
-                                x1 = normalized_vertices[0][
-                                    "x"
-                                ]  # Leftmost x-coordinate
-                                x2 = normalized_vertices[1][
-                                    "x"
-                                ]  # Rightmost x-coordinate
-                                y1 = normalized_vertices[0]["y"]  # Topmost y-coordinate
-                                y2 = normalized_vertices[2][
-                                    "y"
-                                ]  # Bottommost y-coordinate
+                    for page in annotation["pages"]:
+                        for block in page["blocks"]:
+                            for paragraph in block["paragraphs"]:
+                                for word in paragraph["words"]:
+                                    normalized_vertices = word["boundingBox"][
+                                        "normalizedVertices"
+                                    ]
+                                    # Extract coordinates from normalizedVertices
+                                    x1 = normalized_vertices[0][
+                                        "x"
+                                    ]  # Leftmost x-coordinate
+                                    x2 = normalized_vertices[1][
+                                        "x"
+                                    ]  # Rightmost x-coordinate
+                                    y1 = normalized_vertices[0]["y"]  # Topmost y-coordinate
+                                    y2 = normalized_vertices[2][
+                                        "y"
+                                    ]  # Bottommost y-coordinate
 
-                                symbols_list = word["symbols"]
-                                # Initialize an empty string to store the full text of the word
-                                full_text = ""
+                                    symbols_list = word["symbols"]
+                                    # Initialize an empty string to store the full text of the word
+                                    full_text = ""
+                                    # Concatenate the "text" attribute of each symbol to form the word
+                                    for symbol in symbols_list:
+                                        full_text += symbol["text"]
 
-                                # Concatenate the "text" attribute of each symbol to form the word
-                                for symbol in symbols_list:
-                                    full_text += symbol["text"]
+                                    position_info = {
+                                        "text": full_text,
+                                        "x1": x1,
+                                        "x2": x2,
+                                        "y1": y1,
+                                        "y2": y2,
+                                    }
 
-                                position_info = {
-                                    "text": full_text,
-                                    "x1": x1,
-                                    "x2": x2,
-                                    "y1": y1,
-                                    "y2": y2,
-                                }
-
-                                # Append position information to the page dictionary
-                                page["positions"].append(position_info)
+                                    # Append position information to the page dictionary
+                                    page["positions"].append(position_info)
 
                     pages.append(page)
                 except KeyError as e:
