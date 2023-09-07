@@ -58,13 +58,12 @@ class CloudVision(AddOn):
         if not self.org_id:
             self.set_message("No organization to charge.")
             return False
-        num_chars = 0
+        num_pages = 0
         for document in self.get_documents():
-            num_chars += len(document.full_text)
-        cost = math.ceil(num_chars / 75)
+            num_pages += document.page_count
         resp = self.client.post(
             f"organizations/{self.org_id}/ai_credits/",
-            json={"ai_credits": cost},
+            json={"ai_credits": num_pages},
         )
         if resp.status_code != 200:
             self.set_message("Error charging AI credits.")
