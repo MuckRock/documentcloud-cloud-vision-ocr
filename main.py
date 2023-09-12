@@ -25,7 +25,7 @@ class CloudVision(AddOn):
         super().__init__(*args, **kwargs)
         self.setup_credential_file()
         # Set bucket name
-        self.bucket_name = "documentcloud_cloud_vision_ocr"
+        self.bucket_name = "documentcloud_cloudvision_ocr"
         # Instantiate a client for the client libraries 'storage' and 'vision'
         self.storage_client = storage.Client()
         self.vision_client = vision.ImageAnnotatorClient()
