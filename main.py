@@ -215,7 +215,9 @@ class CloudVision(AddOn):
     def main(self):
         """For each document, it sends the PDF to Google Cloud Storage and runs OCR"""
         os.mkdir("out")
-        self.validate()
+        if not self.validate():
+            # if not validated, return immediately
+            return
         for document in self.get_documents():
             pdf_name = f"{document.title}.pdf"
             with open(f"./out/{document.title}.pdf", "wb") as file:
