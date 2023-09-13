@@ -49,7 +49,8 @@ class CloudVision(AddOn):
 
     def validate(self):
         """Validate that we can run the OCR"""
-        if self.get_document_count() == 0 or self.get_document_count() is None:
+        print(self.get_document_count())
+        if self.get_document_count() == 0:
             self.set_message(
                 "It looks like no documents were selected. Search for some or "
                 "select them and run again."
