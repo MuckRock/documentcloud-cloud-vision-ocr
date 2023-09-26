@@ -190,8 +190,8 @@ class CloudVision(AddOn):
 
                     pages.append(page)
                 except KeyError as e:
+                    print("Key Error")
                     print(e)
-                    print(full_text)
                 except ValueError:
                     self.set_message(
                         "Value error - Ping us at info@documentcloud.org"
@@ -201,8 +201,8 @@ class CloudVision(AddOn):
         # Set the pages with text and position information to the document
         # print(pages) debug
         resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
-        # print(resp.status_code) debug
-        # print(resp.json()) debug
+        print(resp.status_code)
+        print(resp.json())
 
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc"""
