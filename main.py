@@ -201,6 +201,7 @@ class CloudVision(AddOn):
         # Set the pages with text and position information to the document
         # print(pages) debug
         resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
+        print(pages)
         print(resp.status_code)
         print(resp.json())
 
