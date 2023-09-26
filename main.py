@@ -177,17 +177,16 @@ class CloudVision(AddOn):
 
                                     symbols_list = word["symbols"]
                                     full_text = ''.join(symbol["text"] for symbol in symbols_list)
-                                    
-                                    position_info = {
-                                        "text": full_text,
-                                        "x1": x1,
-                                        "x2": x2,
-                                        "y1": y1,
-                                        "y2": y2,
-                                    }
-
-                                    # Append position information to the page dictionary
-                                    page["positions"].append(position_info)
+                                    if 0 <= x1 <= 1 and 0 <= x2 <= 1 and 0 <= y1 <= 1 and 0 <= y2 <= 1:
+                                        position_info = {
+                                            "text": full_text,
+                                            "x1": x1,
+                                            "x2": x2,
+                                            "y1": y1,
+                                            "y2": y2,
+                                        }
+                                        # Append position information to the page dictionary
+                                        page["positions"].append(position_info)
 
                     pages.append(page)
                 except KeyError as e:
