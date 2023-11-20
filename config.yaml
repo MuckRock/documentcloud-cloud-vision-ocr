@@ -10,3 +10,6 @@ properties: {}
 categories:
   - extraction
   - premium
+cost: 
+  amount: 1
+  unit: document
