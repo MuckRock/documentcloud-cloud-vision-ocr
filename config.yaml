@@ -11,5 +11,6 @@ categories:
   - extraction
   - premium
 cost: 
+  price: 1
   amount: 1
   unit: document
