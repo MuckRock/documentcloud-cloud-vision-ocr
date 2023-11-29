@@ -62,9 +62,9 @@ class CloudVision(AddOn):
             num_pages = 0
             for document in self.get_documents():
                 num_pages += document.page_count
-            self.charge_credits(num_pages)
-            if resp.status_code != 200:
-                self.set_message("Error charging AI credits.")
+            try:
+                self.charge_credits(num_pages)
+            except ValueError:
                 return False
         return True
 
