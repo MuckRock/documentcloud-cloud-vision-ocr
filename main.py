@@ -62,10 +62,7 @@ class CloudVision(AddOn):
             num_pages = 0
             for document in self.get_documents():
                 num_pages += document.page_count
-            resp = self.client.post(
-                f"organizations/{self.org_id}/ai_credits/",
-                json={"ai_credits": num_pages},
-            )
+            self.charge_credits(num_pages)
             if resp.status_code != 200:
                 self.set_message("Error charging AI credits.")
                 return False
