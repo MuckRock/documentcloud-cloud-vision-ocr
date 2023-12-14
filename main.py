@@ -138,8 +138,10 @@ class CloudVision(AddOn):
         """Uses DC API to set the page text and positions given the OCR resp"""
         pages = []
         for i, blob in enumerate(blobs_list):
+            print(len(blobs_list))
             json_string = blob.download_as_string()
             response = json.loads(json_string)
+            print(response)
             full_text_response = response["responses"]
 
             for text_response in full_text_response:
