@@ -198,7 +198,7 @@ class CloudVision(AddOn):
                     sys.exit(1)
 
         # Set the pages with text and position information to the document
-        resp = self.client.patch(f"documents/{document.id}/", json={"pages": pagetraceback.print_exc()s})
+        resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
 
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc"""
