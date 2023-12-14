@@ -6,6 +6,7 @@ import os
 import sys
 import math
 import json
+import traceback
 from tempfile import NamedTemporaryFile
 
 # pylint: disable = import-error
@@ -190,12 +191,12 @@ class CloudVision(AddOn):
                     self.set_message("Key error- ping us at info@documentcloud.org with the document you're trying to OCR")
                     sys.exit(1)
                 except ValueError as v:
+                    traceback.print_exc()
                     self.set_message(
                         "Value error - Ping us at info@documentcloud.org"
                         " if you see this more than once."
                     )
-                    print(v)
-                    sys.exit(1)
+                    sys.exit(0)
 
         # Set the pages with text and position information to the document
         resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
