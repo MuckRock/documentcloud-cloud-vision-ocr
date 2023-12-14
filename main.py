@@ -161,17 +161,10 @@ class CloudVision(AddOn):
                                         normalized_vertices = word["boundingBox"][
                                             "normalizedVertices"
                                         ]
-                                        # Extract coordinates from normalizedVertices
-                                        x1 = normalized_vertices[0][
-                                            "x"
-                                        ]  # Leftmost x-coordinate
-                                        x2 = normalized_vertices[1][
-                                            "x"
-                                        ]  # Rightmost x-coordinate
-                                        y1 = normalized_vertices[0]["y"]  # Topmost y-coordinate
-                                        y2 = normalized_vertices[2][
-                                            "y"
-                                        ]  # Bottommost y-coordinate
+                                        x1 = normalized_vertices[0].get("x", 0)  # Leftmost x-coordinate
+                                        x2 = normalized_vertices[1].get("x", 0)  # Rightmost x-coordinate
+                                        y1 = normalized_vertices[0].get("y", 0)  # Topmost y-coordinate
+                                        y2 = normalized_vertices[2].get("y", 0)  # Bottommost y-coordinate
 
                                         symbols_list = word["symbols"]
                                         full_text = ''.join(symbol["text"] for symbol in symbols_list)
