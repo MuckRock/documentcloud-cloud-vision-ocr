@@ -6,7 +6,6 @@ import os
 import sys
 import math
 import json
-import traceback
 from tempfile import NamedTemporaryFile
 
 # pylint: disable = import-error
@@ -189,7 +188,6 @@ class CloudVision(AddOn):
                     pages.append(page)
                 except KeyError as e:
                     print(v)
-                    traceback.print_exc()
                     self.set_message("Key error- ping us at info@documentcloud.org with the document you're trying to OCR")
                     sys.exit(1)
                 except ValueError as v:
