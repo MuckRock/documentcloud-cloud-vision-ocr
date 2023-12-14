@@ -189,12 +189,12 @@ class CloudVision(AddOn):
                 except KeyError as e:
                     self.set_message("Key error- ping us at info@documentcloud.org with the document you're trying to OCR")
                     sys.exit(1)
-                except ValueError:
+                except ValueError as v:
                     self.set_message(
                         "Value error - Ping us at info@documentcloud.org"
                         " if you see this more than once."
                     )
-                    print(ValueError)
+                    print(v)
                     sys.exit(1)
 
         # Set the pages with text and position information to the document
