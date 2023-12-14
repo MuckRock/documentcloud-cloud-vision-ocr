@@ -144,48 +144,57 @@ class CloudVision(AddOn):
 
             for text_response in full_text_response:
                 try:
-                    annotation = text_response["fullTextAnnotation"]
-                    page = {
-                        "page_number": i,
-                        "text": annotation["text"],
-                        "ocr": "googlecv",
-                        "positions": [],  # Initialize positions array
-                    }
+                    annotation = text_response.get("fullTextAnnotation")
+                    if annotation:
+                        page = {
+                            "page_number": i,
+                            "text": annotation["text"],
+                            "ocr": "googlecv",
+                            "positions": [],  # Initialize positions array
+                        }
 
-                    # Extract text position information for words
-                    for ann_page in annotation["pages"]:
-                        for block in ann_page["blocks"]:
-                            for paragraph in block["paragraphs"]:
-                                for word in paragraph["words"]:
-                                    normalized_vertices = word["boundingBox"][
-                                        "normalizedVertices"
-                                    ]
-                                    # Extract coordinates from normalizedVertices
-                                    x1 = normalized_vertices[0][
-                                        "x"
-                                    ]  # Leftmost x-coordinate
-                                    x2 = normalized_vertices[1][
-                                        "x"
-                                    ]  # Rightmost x-coordinate
-                                    y1 = normalized_vertices[0]["y"]  # Topmost y-coordinate
-                                    y2 = normalized_vertices[2][
-                                        "y"
-                                    ]  # Bottommost y-coordinate
+                        # Extract text position information for words
+                        for ann_page in annotation["pages"]:
+                            for block in ann_page["blocks"]:
+                                for paragraph in block["paragraphs"]:
+                                    for word in paragraph["words"]:
+                                        normalized_vertices = word["boundingBox"][
+                                            "normalizedVertices"
+                                        ]
+                                        # Extract coordinates from normalizedVertices
+                                        x1 = normalized_vertices[0][
+                                            "x"
+                                        ]  # Leftmost x-coordinate
+                                        x2 = normalized_vertices[1][
+                                            "x"
+                                        ]  # Rightmost x-coordinate
+                                        y1 = normalized_vertices[0]["y"]  # Topmost y-coordinate
+                                        y2 = normalized_vertices[2][
+                                            "y"
+                                        ]  # Bottommost y-coordinate
 
-                                    symbols_list = word["symbols"]
-                                    full_text = ''.join(symbol["text"] for symbol in symbols_list)
-                                    if 0 <= x1 <= 1 and 0 <= x2 <= 1 and 0 <= y1 <= 1 and 0 <= y2 <= 1:
-                                        position_info = {
-                                            "text": full_text,
-                                            "x1": x1,
-                                            "x2": x2,
-                                            "y1": y1,
-                                            "y2": y2,
-                                        }
-                                        # Append position information to the page dictionary
-                                        page["positions"].append(position_info)
+                                        symbols_list = word["symbols"]
+                                        full_text = ''.join(symbol["text"] for symbol in symbols_list)
+                                        if 0 <= x1 <= 1 and 0 <= x2 <= 1 and 0 <= y1 <= 1 and 0 <= y2 <= 1:
+                                            position_info = {
+                                                "text": full_text,
+                                                "x1": x1,
+                                                "x2": x2,
+                                                "y1": y1,
+                                                "y2": y2,
+                                            }
+                                            # Append position information to the page dictionary
+                                            page["positions"].append(position_info)
 
-                    pages.append(page)
+                        pages.append(page)
+                    else:
+                        page = {
+                            "page_number": i,
+                            "text": "",
+                            "ocr": "googlecv",
+                            "positions": [],  # Initialize positions array
+                        }
+                        pages.append(page)
                 except KeyError as e:
                     print(e)
                     self.set_message("Key error- ping us at info@documentcloud.org with the document you're trying to OCR")
