@@ -94,7 +94,7 @@ class CloudVision(AddOn):
         # In this case, the JSON files will be saved inside a
         # subfolder of the Cloud version of the input_dir called 'json_output'.
         gcs_destination_uri = os.path.join(
-            "gs://", self.bucket_name, remote_subdir, "json_output", filename[:30] + "_"
+            "gs://", self.bucket_name, remote_subdir, "json_output", filename[:60] + "_"
         )
 
         # Output destination and output configuration.
@@ -138,10 +138,8 @@ class CloudVision(AddOn):
         """Uses DC API to set the page text and positions given the OCR resp"""
         pages = []
         for i, blob in enumerate(blobs_list):
-            print(len(blobs_list))
             json_string = blob.download_as_string()
             response = json.loads(json_string)
-            print(response)
             full_text_response = response["responses"]
 
             for text_response in full_text_response:
