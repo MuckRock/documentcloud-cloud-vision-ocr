@@ -194,6 +194,7 @@ class CloudVision(AddOn):
                         "Value error - Ping us at info@documentcloud.org"
                         " if you see this more than once."
                     )
+                    print(ValueError)
                     sys.exit(1)
 
         # Set the pages with text and position information to the document
