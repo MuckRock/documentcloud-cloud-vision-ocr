@@ -62,12 +62,9 @@ class CloudVision(AddOn):
             num_pages = 0
             for document in self.get_documents():
                 num_pages += document.page_count
-            resp = self.client.post(
-                f"organizations/{self.org_id}/ai_credits/",
-                json={"ai_credits": num_pages},
-            )
-            if resp.status_code != 200:
-                self.set_message("Error charging AI credits.")
+            try:
+                self.charge_credits(num_pages)
+            except ValueError:
                 return False
         return True
 
@@ -97,7 +94,7 @@ class CloudVision(AddOn):
         # In this case, the JSON files will be saved inside a
         # subfolder of the Cloud version of the input_dir called 'json_output'.
         gcs_destination_uri = os.path.join(
-            "gs://", self.bucket_name, remote_subdir, "json_output", filename[:30] + "_"
+            "gs://", self.bucket_name, remote_subdir, "json_output", filename[:60] + "_"
         )
 
         # Output destination and output configuration.
@@ -147,52 +144,55 @@ class CloudVision(AddOn):
 
             for text_response in full_text_response:
                 try:
-                    annotation = text_response["fullTextAnnotation"]
-                    page = {
-                        "page_number": i,
-                        "text": annotation["text"],
-                        "ocr": "googlecv",
-                        "positions": [],  # Initialize positions array
-                    }
+                    annotation = text_response.get("fullTextAnnotation")
+                    if annotation:
+                        page = {
+                            "page_number": i,
+                            "text": annotation["text"],
+                            "ocr": "googlecv",
+                            "positions": [],  # Initialize positions array
+                        }
 
-                    # Extract text position information for words
-                    for ann_page in annotation["pages"]:
-                        for block in ann_page["blocks"]:
-                            for paragraph in block["paragraphs"]:
-                                for word in paragraph["words"]:
-                                    normalized_vertices = word["boundingBox"][
-                                        "normalizedVertices"
-                                    ]
-                                    # Extract coordinates from normalizedVertices
-                                    x1 = normalized_vertices[0][
-                                        "x"
-                                    ]  # Leftmost x-coordinate
-                                    x2 = normalized_vertices[1][
-                                        "x"
-                                    ]  # Rightmost x-coordinate
-                                    y1 = normalized_vertices[0]["y"]  # Topmost y-coordinate
-                                    y2 = normalized_vertices[2][
-                                        "y"
-                                    ]  # Bottommost y-coordinate
+                        # Extract text position information for words
+                        for ann_page in annotation["pages"]:
+                            for block in ann_page["blocks"]:
+                                for paragraph in block["paragraphs"]:
+                                    for word in paragraph["words"]:
+                                        normalized_vertices = word["boundingBox"][
+                                            "normalizedVertices"
+                                        ]
+                                        x1 = normalized_vertices[0].get("x", 0)  # Leftmost x-coordinate
+                                        x2 = normalized_vertices[1].get("x", 0)  # Rightmost x-coordinate
+                                        y1 = normalized_vertices[0].get("y", 0)  # Topmost y-coordinate
+                                        y2 = normalized_vertices[2].get("y", 0)  # Bottommost y-coordinate
 
-                                    symbols_list = word["symbols"]
-                                    full_text = ''.join(symbol["text"] for symbol in symbols_list)
-                                    if 0 <= x1 <= 1 and 0 <= x2 <= 1 and 0 <= y1 <= 1 and 0 <= y2 <= 1:
-                                        position_info = {
-                                            "text": full_text,
-                                            "x1": x1,
-                                            "x2": x2,
-                                            "y1": y1,
-                                            "y2": y2,
-                                        }
-                                        # Append position information to the page dictionary
-                                        page["positions"].append(position_info)
+                                        symbols_list = word["symbols"]
+                                        full_text = ''.join(symbol["text"] for symbol in symbols_list)
+                                        if 0 <= x1 <= 1 and 0 <= x2 <= 1 and 0 <= y1 <= 1 and 0 <= y2 <= 1:
+                                            position_info = {
+                                                "text": full_text,
+                                                "x1": x1,
+                                                "x2": x2,
+                                                "y1": y1,
+                                                "y2": y2,
+                                            }
+                                            # Append position information to the page dictionary
+                                            page["positions"].append(position_info)
 
-                    pages.append(page)
+                        pages.append(page)
+                    else:
+                        page = {
+                            "page_number": i,
+                            "text": "",
+                            "ocr": "googlecv",
+                            "positions": [],  # Initialize positions array
+                        }
+                        pages.append(page)
                 except KeyError as e:
+                    print(e)
                     self.set_message("Key error- ping us at info@documentcloud.org with the document you're trying to OCR")
                     sys.exit(1)
-                except ValueError:
+                except ValueError as v:
                     self.set_message(
                         "Value error - Ping us at info@documentcloud.org"
                         " if you see this more than once."

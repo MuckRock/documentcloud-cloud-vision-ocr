@@ -1,7 +1,6 @@
 title: Google Cloud Vision OCR
 description: >-
   OCR your documents using Google Cloud Vision OCR. 
-  This Add-On uses 1 AI Credit per page. 
 instructions: ''
 type: object
 documents:
@@ -11,5 +10,6 @@ categories:
   - extraction
   - premium
 cost: 
+  price: 1
   amount: 1
-  unit: document
+  unit: page
