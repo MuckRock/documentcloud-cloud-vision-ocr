@@ -6,7 +6,7 @@ jobs:
   Run-Add-On:
     uses: MuckRock/documentcloud-addon-workflows/.github/workflows/run-addon.yml@v1
     with:
-      timeout: 15
+      timeout: 360
       mask-inputs: false
     secrets:
       token: ${{ secrets.GAC }}

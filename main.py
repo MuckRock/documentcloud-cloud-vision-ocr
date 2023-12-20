@@ -9,14 +9,14 @@ import json
 from tempfile import NamedTemporaryFile
 
 # pylint: disable = import-error
-from documentcloud.addon import SoftTimeOutAddOn
+from documentcloud.addon import AddOn
 
 # pylint: disable = no-name-in-module
 from google.cloud import vision
 from google.cloud import storage
 
 
-class CloudVision(SoftTimeOutAddOn):
+class CloudVision(AddOn):
     """OCR your documents using Google Cloud Vision API"""
 
     # Initialize GCV Variables
