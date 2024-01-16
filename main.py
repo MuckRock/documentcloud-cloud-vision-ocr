@@ -3,6 +3,7 @@ This is Add-On allows users to use Google Cloud Vision API to OCR a document.
 """
 
 import os
+import time
 import sys
 import math
 import json
@@ -203,6 +204,10 @@ class CloudVision(AddOn):
         for i in range(0, len(pages), page_chunk_size):
             chunk = pages[i:i + page_chunk_size]
             resp = self.client.patch(f"documents/{document.id}/", json={"pages": chunk})
+            while True:
+                if document.status == "success": # Break out of for loop if document status becomes success
+                    break
+                time.sleep(5)
 
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc"""
