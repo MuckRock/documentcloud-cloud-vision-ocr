@@ -199,8 +199,10 @@ class CloudVision(AddOn):
                     )
                     sys.exit(1)
 
-        # Set the pages with text and position information to the document
-        resp = self.client.patch(f"documents/{document.id}/", json={"pages": pages})
+        page_chunk_size = 100  # Set your desired chunk size
+        for i in range(0, len(pages), page_chunk_size):
+            chunk = pages[i:i + page_chunk_size]
+            resp = self.client.patch(f"documents/{document.id}/", json={"pages": chunk})
 
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc"""
