@@ -115,7 +115,7 @@ class CloudVision(AddOn):
         operation = self.vision_client.async_batch_annotate_files(
             requests=[async_request]
         )
-        operation.result(timeout=360)
+        operation.result(timeout=3600)
 
         return gcs_destination_uri
 
