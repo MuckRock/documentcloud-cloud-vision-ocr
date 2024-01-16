@@ -205,10 +205,10 @@ class CloudVision(AddOn):
             chunk = pages[i:i + page_chunk_size]
             resp = self.client.patch(f"documents/{document.id}/", json={"pages": chunk})
             while True:
+                time.sleep(10)
                 if document.status == "success": # Break out of for loop if document status becomes success
                     break
-                time.sleep(5)
-
+                
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc"""
         # Assign the remote path to the response JSON files to a variable.
