@@ -5,12 +5,12 @@ This is Add-On allows users to use Google Cloud Vision API to OCR a document.
 import os
 import time
 import sys
-import math
 import json
 from tempfile import NamedTemporaryFile
 
 # pylint: disable = import-error
 from documentcloud.addon import AddOn
+from documentcloud.exceptions import APIError
 
 # pylint: disable = no-name-in-module
 from google.cloud import vision
@@ -56,17 +56,18 @@ class CloudVision(AddOn):
                 "select them and run again."
             )
             return False
-        elif not self.org_id:
+        if not self.org_id:
             self.set_message("No organization to charge.")
             return False
-        else:
-            num_pages = 0
-            for document in self.get_documents():
-                num_pages += document.page_count
-            try:
-                self.charge_credits(num_pages)
-            except ValueError:
-                return False
+        num_pages = 0
+        for document in self.get_documents():
+            num_pages += document.page_count
+        try:
+            self.charge_credits(num_pages)
+        except ValueError:
+            return False
+        except APIError:
+            return False
         return True
 
     def json_ocr(self, input_dir, filename):
@@ -162,14 +163,29 @@ class CloudVision(AddOn):
                                         normalized_vertices = word["boundingBox"][
                                             "normalizedVertices"
                                         ]
-                                        x1 = normalized_vertices[0].get("x", 0)  # Leftmost x-coordinate
-                                        x2 = normalized_vertices[1].get("x", 0)  # Rightmost x-coordinate
-                                        y1 = normalized_vertices[0].get("y", 0)  # Topmost y-coordinate
-                                        y2 = normalized_vertices[2].get("y", 0)  # Bottommost y-coordinate
+                                        x1 = normalized_vertices[0].get(
+                                            "x", 0
+                                        )  # Leftmost x-coordinate
+                                        x2 = normalized_vertices[1].get(
+                                            "x", 0
+                                        )  # Rightmost x-coordinate
+                                        y1 = normalized_vertices[0].get(
+                                            "y", 0
+                                        )  # Topmost y-coordinate
+                                        y2 = normalized_vertices[2].get(
+                                            "y", 0
+                                        )  # Bottommost y-coordinate
 
                                         symbols_list = word["symbols"]
-                                        full_text = ''.join(symbol["text"] for symbol in symbols_list)
-                                        if 0 <= x1 <= 1 and 0 <= x2 <= 1 and 0 <= y1 <= 1 and 0 <= y2 <= 1:
+                                        full_text = "".join(
+                                            symbol["text"] for symbol in symbols_list
+                                        )
+                                        if (
+                                            0 <= x1 <= 1
+                                            and 0 <= x2 <= 1
+                                            and 0 <= y1 <= 1
+                                            and 0 <= y2 <= 1
+                                        ):
                                             position_info = {
                                                 "text": full_text,
                                                 "x1": x1,
@@ -191,9 +207,11 @@ class CloudVision(AddOn):
                         pages.append(page)
                 except KeyError as e:
                     print(e)
-                    self.set_message("Key error- ping us at info@documentcloud.org with the document you're trying to OCR")
+                    self.set_message(
+                        "Key error- ping us at info@documentcloud.org with the document"
+                    )
                     sys.exit(1)
-                except ValueError as v:
+                except ValueError:
                     self.set_message(
                         "Value error - Ping us at info@documentcloud.org"
                         " if you see this more than once."
@@ -202,13 +220,15 @@ class CloudVision(AddOn):
 
         page_chunk_size = 100  # Set your desired chunk size
         for i in range(0, len(pages), page_chunk_size):
-            chunk = pages[i:i + page_chunk_size]
-            resp = self.client.patch(f"documents/{document.id}/", json={"pages": chunk})
+            chunk = pages[i : i + page_chunk_size]
+            self.client.patch(f"documents/{document.id}/", json={"pages": chunk})
             while True:
                 time.sleep(15)
-                if document.status == "success": # Break out of for loop if document status becomes success
+                if (
+                    document.status == "success"
+                ):  # Break out of for loop if document status becomes success
                     break
-                
+
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc"""
         # Assign the remote path to the response JSON files to a variable.
@@ -221,8 +241,9 @@ class CloudVision(AddOn):
         """For each document, it sends the PDF to Google Cloud Storage and runs OCR"""
         os.mkdir("out")
         if not self.validate():
-            # if not validated, return immediately
-            return
+            # if not validated, print message and exit.
+            self.set_message("You do not have sufficient AI credits to run this Add-On")
+            sys.exit(0)
         for document in self.get_documents():
             pdf_name = f"{document.title}.pdf"
             with open(f"./out/{document.title}.pdf", "wb") as file:
