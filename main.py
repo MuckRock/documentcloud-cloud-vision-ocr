@@ -221,13 +221,18 @@ class CloudVision(AddOn):
         page_chunk_size = 100  # Set your desired chunk size
         for i in range(0, len(pages), page_chunk_size):
             chunk = pages[i : i + page_chunk_size]
-            self.client.patch(f"documents/{document.id}/", json={"pages": chunk})
-            while True:
-                time.sleep(15)
-                if (
-                    document.status == "success"
-                ):  # Break out of for loop if document status becomes success
-                    break
+            try:
+                self.client.patch(f"documents/{document.id}/", json={"pages": chunk})
+                while True:
+                    time.sleep(15)
+                    if (
+                        document.status == "success"
+                    ):  # Break out of for loop if document status becomes success
+                        break
+            except APIError:
+                self.set_message(
+                    "You are not the owner of one or more of the submitted documents, so you cannot OCR them. The Add-On will skip those."
+                )
 
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc"""
