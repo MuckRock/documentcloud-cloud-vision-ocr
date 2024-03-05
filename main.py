@@ -244,6 +244,7 @@ class CloudVision(AddOn):
 
     def main(self):
         """For each document, it sends the PDF to Google Cloud Storage and runs OCR"""
+        to_tag = self.data.get("to_tag", False)
         os.mkdir("out")
         if not self.validate():
             # if not validated, print message and exit.
@@ -254,6 +255,9 @@ class CloudVision(AddOn):
             with open(f"./out/{document.title}.pdf", "wb") as file:
                 file.write(document.pdf)
             self.vision_method(document, "out", pdf_name)
+            if to_tag:
+                document.data["ocr_engine"]="google"
+                document.save()
 
 
 if __name__ == "__main__":
