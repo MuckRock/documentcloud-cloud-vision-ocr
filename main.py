@@ -225,8 +225,9 @@ class CloudVision(AddOn):
                 self.client.patch(f"documents/{document.id}/", json={"pages": chunk})
                 while True:
                     time.sleep(15)
+                    document_ref = self.client.documents.get(document.id)
                     if (
-                        document.status == "success"
+                        document_ref.status == "success"
                     ):  # Break out of for loop if document status becomes success
                         break
             except APIError:
