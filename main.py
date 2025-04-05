@@ -136,6 +136,31 @@ class CloudVision(AddOn):
 
         return blobs_list
 
+    def tag_document(self,document):
+        """ Tags document with OCR engine """
+        retries = 0
+        max_retries = 5
+        status_check_delay = 30
+        retry_delay = 30
+        while retries < max_retries:
+            print("Checking document status before tagging...")
+            try:
+                document_ref = self.client.documents.get(document.id)
+                if document_ref.status == "success":
+                    print("Tagging document...")
+                    document.data["ocr_engine"] = "google"
+                    document.save()
+                    print("Finished tagging document")
+                    break
+                print(f"Document status is {document_ref.status}. Waiting for success...")
+                time.sleep(status_check_delay)
+            except APIError as exc:
+                print(f"Error checking document status: {exc}. Retrying...")
+                retries += 1
+                time.sleep(retry_delay)
+        else:
+            print(f"Failed to tag document after {max_retries} attempts.")
+
     def set_doc_text(self, document, blobs_list):
         """Uses DC API to set the page text and positions given the OCR resp"""
         pages = []
@@ -218,22 +243,43 @@ class CloudVision(AddOn):
                     )
                     sys.exit(1)
 
-        page_chunk_size = 50  # Max allowed by the API
+        page_chunk_size = 30
+        max_retries = 5
+        retry_delay = 30
+
         for i in range(0, len(pages), page_chunk_size):
             chunk = pages[i : i + page_chunk_size]
-            try:
-                self.client.patch(f"documents/{document.id}/", json={"pages": chunk})
-                while True:
-                    time.sleep(15)
-                    document_ref = self.client.documents.get(document.id)
-                    if (
-                        document_ref.status == "success"
-                    ):  # Break out of for loop if document status becomes success
-                        break
-            except APIError:
-                self.set_message(
-                    "You are not the owner of one or more of the submitted documents, so you cannot OCR them. The Add-On will skip those."
+            retries = 0
+
+            while retries < max_retries:
+                print(f"Updating the page text (pages {i} to {i + page_chunk_size})")
+                try:
+                    resp = self.client.patch(
+                        f"documents/{document.id}/", json={"pages": chunk}
+                    )
+                    resp.raise_for_status()
+                except APIError as exc:
+                    # Check the error message to determine if it's
+                    # because the document is still processing
+                    if "processing" in str(exc):  # Adjust based on actual error message format
+                        print(
+                            "Document is still processing, retrying... "
+                            f"(Attempt {retries + 1} of {max_retries})"
+                        )
+                        retries += 1
+                        time.sleep(retry_delay)
+                        continue
+                    # If it's another type of error, re-raise
+                    print(f"Unexpected error: {exc}. Exiting retries.")
+                    raise
+                print("Completed updating the page text")
+                break
+            else:
+                print(
+                    f"Failed to update pages {i} to {i + page_chunk_size}"
+                    f" after {max_retries} attempts."
                 )
+                break  # Exit loop if retries exceeded
 
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc"""
@@ -257,8 +303,7 @@ class CloudVision(AddOn):
                 file.write(document.pdf)
             self.vision_method(document, "out", pdf_name)
             if to_tag:
-                document.data["ocr_engine"]="google"
-                document.save()
+                self.tag_document(document)
 
 
 if __name__ == "__main__":
