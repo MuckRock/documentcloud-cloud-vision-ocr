@@ -291,6 +291,7 @@ class CloudVision(AddOn):
 
     def main(self):
         """For each document, it sends the PDF to Google Cloud Storage and runs OCR"""
+        self.client.session.headers.update({'User-Agent': 'Google Cloud Vision OCR Add-On'})
         to_tag = self.data.get("to_tag", False)
         os.mkdir("out")
         if not self.validate():
