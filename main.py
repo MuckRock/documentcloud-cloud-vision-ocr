@@ -1,24 +1,27 @@
 """
-This is Add-On allows users to use Google Cloud Vision API to OCR a document. 
+This is Add-On allows users to use Google Cloud Vision API to OCR a document.
 """
 
-import os
-import time
-import sys
 import json
+import os
+import sys
+import time
 from tempfile import NamedTemporaryFile
 
 # pylint: disable = import-error
 from documentcloud.addon import AddOn
 from documentcloud.exceptions import APIError
-
 # pylint: disable = no-name-in-module
-from google.cloud import vision
-from google.cloud import storage
+from google.cloud import storage, vision
 
 
 class CloudVision(AddOn):
     """OCR your documents using Google Cloud Vision API"""
+
+    # Page-push tuning constants
+    PAGE_CHUNK_SIZE = 30
+    PUSH_MAX_RETRIES = 5
+    PUSH_RETRY_DELAY = 30
 
     # Initialize GCV Variables
     def __init__(self, *args, **kwargs):
@@ -136,150 +139,137 @@ class CloudVision(AddOn):
 
         return blobs_list
 
-    def tag_document(self,document):
-        """ Tags document with OCR engine """
+    def tag_document(self, document, max_retries=5, retry_delay=60):
+        """Tags document with OCR engine"""
         retries = 0
-        max_retries = 5
-        status_check_delay = 30
-        retry_delay = 30
         while retries < max_retries:
-            print("Checking document status before tagging...")
             try:
-                document_ref = self.client.documents.get(document.id)
-                if document_ref.status == "success":
-                    print("Tagging document...")
-                    document.data["ocr_engine"] = "google"
-                    document.save()
-                    print("Finished tagging document")
-                    break
-                print(f"Document status is {document_ref.status}. Waiting for success...")
-                time.sleep(status_check_delay)
+                print("Tagging document...")
+                self.client.patch(
+                    f"documents/{document.id}/",
+                    json={"data": {"ocr_engine": ["google"]}},
+                )
+                print("Finished tagging document")
+                break
             except APIError as exc:
-                print(f"Error checking document status: {exc}. Retrying...")
+                print(f"Error tagging document. {exc}. Retrying...")
                 retries += 1
                 time.sleep(retry_delay)
         else:
             print(f"Failed to tag document after {max_retries} attempts.")
+            self.set_message(
+                "Failed to set the OCR tag for this document. "
+                "Email info@documentcloud.org to debug."
+            )
+            sys.exit(1)
 
-    def set_doc_text(self, document, blobs_list):
-        """Uses DC API to set the page text and positions given the OCR resp"""
+    @staticmethod
+    def _extract_positions(annotation):
+        """Extract normalized word position boxes from a fullTextAnnotation"""
+        positions = []
+        for ann_page in annotation["pages"]:
+            for block in ann_page["blocks"]:
+                for paragraph in block["paragraphs"]:
+                    for word in paragraph["words"]:
+                        vertices = word["boundingBox"]["normalizedVertices"]
+                        x1 = vertices[0].get("x", 0)  # Leftmost x-coordinate
+                        x2 = vertices[1].get("x", 0)  # Rightmost x-coordinate
+                        y1 = vertices[0].get("y", 0)  # Topmost y-coordinate
+                        y2 = vertices[2].get("y", 0)  # Bottommost y-coordinate
+                        if not (
+                            0 <= x1 <= 1
+                            and 0 <= x2 <= 1
+                            and 0 <= y1 <= 1
+                            and 0 <= y2 <= 1
+                        ):
+                            continue
+                        full_text = "".join(
+                            symbol["text"] for symbol in word["symbols"]
+                        )
+                        positions.append(
+                            {"text": full_text, "x1": x1, "x2": x2, "y1": y1, "y2": y2}
+                        )
+        return positions
+
+    def _parse_page(self, index, text_response):
+        """Build a single page dict from one Vision text_response"""
+        annotation = text_response.get("fullTextAnnotation")
+        if not annotation:
+            return {
+                "page_number": index,
+                "text": "",
+                "ocr": "googlecv",
+                "positions": [],
+            }
+        return {
+            "page_number": index,
+            "text": annotation["text"],
+            "ocr": "googlecv",
+            "positions": self._extract_positions(annotation),
+        }
+
+    def _pages_from_blobs(self, blobs_list):
+        """Parse all blobs into a list of page dicts"""
         pages = []
         for i, blob in enumerate(blobs_list):
-            json_string = blob.download_as_string()
-            response = json.loads(json_string)
-            full_text_response = response["responses"]
+            response = json.loads(blob.download_as_string())
+            try:
+                for text_response in response["responses"]:
+                    pages.append(self._parse_page(i, text_response))
+            except KeyError as exc:
+                print(exc)
+                self.set_message(
+                    "Key error- ping us at info@documentcloud.org with the document"
+                )
+                sys.exit(1)
+            except ValueError:
+                self.set_message(
+                    "Value error - Ping us at info@documentcloud.org"
+                    " if you see this more than once."
+                )
+                sys.exit(1)
+        return pages
 
-            for text_response in full_text_response:
-                try:
-                    annotation = text_response.get("fullTextAnnotation")
-                    if annotation:
-                        page = {
-                            "page_number": i,
-                            "text": annotation["text"],
-                            "ocr": "googlecv",
-                            "positions": [],  # Initialize positions array
-                        }
-
-                        # Extract text position information for words
-                        for ann_page in annotation["pages"]:
-                            for block in ann_page["blocks"]:
-                                for paragraph in block["paragraphs"]:
-                                    for word in paragraph["words"]:
-                                        normalized_vertices = word["boundingBox"][
-                                            "normalizedVertices"
-                                        ]
-                                        x1 = normalized_vertices[0].get(
-                                            "x", 0
-                                        )  # Leftmost x-coordinate
-                                        x2 = normalized_vertices[1].get(
-                                            "x", 0
-                                        )  # Rightmost x-coordinate
-                                        y1 = normalized_vertices[0].get(
-                                            "y", 0
-                                        )  # Topmost y-coordinate
-                                        y2 = normalized_vertices[2].get(
-                                            "y", 0
-                                        )  # Bottommost y-coordinate
-
-                                        symbols_list = word["symbols"]
-                                        full_text = "".join(
-                                            symbol["text"] for symbol in symbols_list
-                                        )
-                                        if (
-                                            0 <= x1 <= 1
-                                            and 0 <= x2 <= 1
-                                            and 0 <= y1 <= 1
-                                            and 0 <= y2 <= 1
-                                        ):
-                                            position_info = {
-                                                "text": full_text,
-                                                "x1": x1,
-                                                "x2": x2,
-                                                "y1": y1,
-                                                "y2": y2,
-                                            }
-                                            # Append position information to the page dictionary
-                                            page["positions"].append(position_info)
-
-                        pages.append(page)
-                    else:
-                        page = {
-                            "page_number": i,
-                            "text": "",
-                            "ocr": "googlecv",
-                            "positions": [],  # Initialize positions array
-                        }
-                        pages.append(page)
-                except KeyError as e:
-                    print(e)
-                    self.set_message(
-                        "Key error- ping us at info@documentcloud.org with the document"
-                    )
-                    sys.exit(1)
-                except ValueError:
-                    self.set_message(
-                        "Value error - Ping us at info@documentcloud.org"
-                        " if you see this more than once."
-                    )
-                    sys.exit(1)
-
-        page_chunk_size = 30
-        max_retries = 5
-        retry_delay = 30
-
-        for i in range(0, len(pages), page_chunk_size):
-            chunk = pages[i : i + page_chunk_size]
+    def _push_pages(self, document, pages):
+        """PATCH page text/positions to the DC API in chunks, with retries"""
+        for i in range(0, len(pages), self.PAGE_CHUNK_SIZE):
+            chunk = pages[i : i + self.PAGE_CHUNK_SIZE]
             retries = 0
-
-            while retries < max_retries:
-                print(f"Updating the page text (pages {i} to {i + page_chunk_size})")
+            while retries < self.PUSH_MAX_RETRIES:
+                print(
+                    f"Updating the page text "
+                    f"(pages {i} to {i + self.PAGE_CHUNK_SIZE})"
+                )
                 try:
                     resp = self.client.patch(
                         f"documents/{document.id}/", json={"pages": chunk}
                     )
                     resp.raise_for_status()
                 except APIError as exc:
-                    # Check the error message to determine if it's
-                    # because the document is still processing
-                    if "processing" in str(exc):  # Adjust based on actual error message format
+                    # Retry only if the document is still processing
+                    if "processing" in str(exc):
                         print(
                             "Document is still processing, retrying... "
-                            f"(Attempt {retries + 1} of {max_retries})"
+                            f"(Attempt {retries + 1} of {self.PUSH_MAX_RETRIES})"
                         )
                         retries += 1
-                        time.sleep(retry_delay)
+                        time.sleep(self.PUSH_RETRY_DELAY)
                         continue
-                    # If it's another type of error, re-raise
                     print(f"Unexpected error: {exc}. Exiting retries.")
                     raise
                 print("Completed updating the page text")
                 break
             else:
                 print(
-                    f"Failed to update pages {i} to {i + page_chunk_size}"
-                    f" after {max_retries} attempts."
+                    f"Failed to update pages {i} to {i + self.PAGE_CHUNK_SIZE}"
+                    f" after {self.PUSH_MAX_RETRIES} attempts."
                 )
                 break  # Exit loop if retries exceeded
+
+    def set_doc_text(self, document, blobs_list):
+        """Uses DC API to set the page text and positions given the OCR resp"""
+        pages = self._pages_from_blobs(blobs_list)
+        self._push_pages(document, pages)
 
     def vision_method(self, document, input_dir, filename):
         """Main method that calls the sub-methods to perform OCR on a doc"""
@@ -291,7 +281,9 @@ class CloudVision(AddOn):
 
     def main(self):
         """For each document, it sends the PDF to Google Cloud Storage and runs OCR"""
-        self.client.session.headers.update({'User-Agent': 'Google Cloud Vision OCR Add-On'})
+        self.client.session.headers.update(
+            {"User-Agent": "Google Cloud Vision OCR Add-On"}
+        )
         to_tag = self.data.get("to_tag", False)
         os.mkdir("out")
         if not self.validate():
