@@ -3,4 +3,4 @@ requests
 listcrunch
 google-cloud-vision
 google-cloud-storage
-python-squarelet==0.4.1
+python-squarelet==0.4.0
