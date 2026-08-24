@@ -145,9 +145,10 @@ class CloudVision(AddOn):
         while retries < max_retries:
             try:
                 print("Tagging document...")
+                existing = document.data.get("ocr_engine", [])
                 self.client.patch(
-                    f"documents/{document.id}/",
-                    json={"data": {"ocr_engine": ["google"]}},
+                    f"documents/{document.id}/data/ocr_engine/",
+                    json={"values": ["google"], "remove": existing},
                 )
                 print("Finished tagging document")
                 break
