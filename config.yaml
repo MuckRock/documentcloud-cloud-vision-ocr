@@ -3,8 +3,8 @@ description: >-
   OCR your documents using Google Cloud Vision OCR. 
 instructions: ''
 disclosures: |
-  This Add-On sends data to a Google Cloud Vision endpoint which uses a form of machine learning to OCR documents. 
-  Read the Google Cloud [data usage FAQ](https://docs.cloud.google.com/vision/docs/data-usage) to learn more. 
+  This Add-On sends data to a Google Cloud Vision endpoint which uses machine learning, a type of AI, to OCR documents. 
+  Read the Google Cloud Vision [data usage FAQ](https://docs.cloud.google.com/vision/docs/data-usage) to learn more. 
 type: object
 documents:
   - selected
